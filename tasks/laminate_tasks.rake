@@ -1,0 +1,2 @@
+namespace :laminate do
+end

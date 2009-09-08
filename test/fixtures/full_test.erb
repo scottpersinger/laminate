@@ -1,0 +1,120 @@
+<%= include('header') %>
+<% videos = vodspot.videos(:per_page => 15) %>
+<% first_video = videos[0] %>
+
+<div id="col1">
+  <h1>Videos</h1>
+  <p class="subheading">featured video</p>
+
+  <div id="featured_video">  
+    <a href="<%= first_video.url %>" class="thumbnail">
+      <%= first_video.embed_tag %>
+    </a>
+
+    <div class="metadata">
+      <h2><a href="<%= first_video.url %>" class="title"><%= first_video.title %></a></h2>
+
+      <p>
+        <a href="<%= first_video.rss_from %>">Read the article</a>
+      </p>
+
+      <p class="date">
+        <%= time_ago(first_video.date) %>
+      </p>
+    </div>
+    <div style="clear:both;"></div>
+  </div>
+
+  <div id="video_grid">
+    <p class="subheading">other videos</p>
+    <% videos[1..6].each_with_index do |video,i| %>
+    <div class="video <%if (i+1) % 3==0%>last<%end%>">
+      <a href="<%= video.url %>" class="thumbnail">
+        <img src="<%= video.thumbnail_160 %>" />
+
+        <div class="details">
+          <%= time_ago(video.date) %>
+          <br/><br/><br/>
+          <%if video.tags.size > 0 %>
+          tags <%for tag in video.tags do%>
+          <%= '<b><a href="' + tag.url + '">' + tag.name + '</a></b>, ' %>
+          <%end%>
+          <%end%>
+        </div>
+      </a>
+      <a href="<%=video.url%>" class="title"><%= video.title %></a>
+    </div>
+      <% if (i+1)%3 == 0 %>
+      <div style="clear:both;"></div>
+      <% end %>
+    <%end%>
+    <div style="clear:both;"></div>
+  </div>
+  
+  <div class="video_list">
+    <p class="subheading">older videos</p>
+
+    <%for video in videos[7,9] do%>
+    <div class="video">
+      <a href="<%= video.url %>" class="thumbnail">
+        <img src="<%= video.thumbnail_160 %>" />
+      </a>
+
+      <div class="details">
+        <a href="<%= video.url %>" class="title"><%= video.title %></a>
+        <br/><br/>
+
+        <div style="text-transform:uppercase;font-size:0.8em">
+          <%= time_ago(video.date) %>
+          <br/>
+          <%if video.tags.size > 0 %>
+          tags <%for tag in video.tags do%>
+          <%= '<b><a href="' + tag.url + '">' + tag.name + '</a></b>, ' %>
+          <%end%>
+          <%end%>
+        </div>
+      </div>
+      <div style="clear:both;"></div>
+    </div>
+    <%end%>
+  </div>
+
+  <script>
+  var highlighted_video = null;
+  $j(document).ready(function() {
+    $j('#video_grid .video img').mouseover(function(event) {
+      if (highlighted_video != null) {
+        $j('.details', highlighted_video).animate({height:'14px'});
+      }
+
+      highlighted_video = this.parentNode;
+      $j('.details', this.parentNode).animate({height:'123px'})
+    });
+  });
+  </script>
+</div>
+
+<div id="col_right">
+  <%= util.remote_snippet('http://www.techcrunch.com', 'div#col2 > ul.sponsor_units') %>
+  
+  <div id="tag_list">
+    <h2>Other Videos</h2>
+    <% for tag in util.split(vodspot.config('tag_list'), ',') do %>
+    <% video = vodspot.videos({:tag => tag, :per_page => 1})[0] %>
+    <% if video != nil %>
+    <div class="tag">
+      <a href="/tag/<%=tag%>"><img src="<%= video.thumbnail_100 %>" style="float:left;"/></a>
+      <div style="float:left;display:inline;margin-left:10px;">
+        <h2><a href="/tag/<%=tag%>"><%= tag %></a></h2>
+        <%= vodspot.total_videos({:tag => tag}) %> videos
+      </div>
+      <div style="clear:both;"></div>
+    </div>
+    <% end %>
+    <% end %>
+  </div>
+  
+  <%= util.remote_snippet('http://www.techcrunch.com/2009/', 'div#col2 #sidebar_features') %>
+  
+</div>
+<div style="clear:both;"></div>

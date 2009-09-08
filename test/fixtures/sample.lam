@@ -1,0 +1,6 @@
+<html>
+  <body>
+    <h1>Account: {{user.name}}</h1>
+    <b>Salary: {{user.salary}}</b>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+<!-- Tests the Laminate 'include' function for including another template -->
+{{include('_header')}}
+
+The word for today is:
+<p>{{word}}</p>
+
+{{include('_footer')}}
+
+

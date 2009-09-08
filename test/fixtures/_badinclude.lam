@@ -1,0 +1,7 @@
+<h2>Inner heading</h2>
+
+{{loop stopme}}
+
+inner loop
+
+{{end}}

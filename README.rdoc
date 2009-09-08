@@ -1,0 +1,167 @@
+= Laminate
+
+Laminate is a system for executing user-written templates built using the Lua languge. Templates written in Lua can be 
+executed securely to generate HTML. For end-users, Laminate offers a simple, convenient, yet powerful template
+language. For applications, Laminate makes it easy to safely expose data and functions to be executed by user templates.
+
+Laminate is designed to run as part of a Rails application, but can be used by any Ruby program.
+
+Laminate templates work much like ERb templates - they contain normal HTML which is marked up with dynamic
+content written in the Lua language.
+ 
+
+== Template Example
+
+Here is a simple template that displays the value of the "video_count" variable passed to the template.
+
+  <h2>Your collection contains {{video_count}} videos</h2>
+
+== More complex example
+Iterate over an array of tags:
+
+  {{for i,tag in ipairs(tags) do}}
+	  <a href="/tag/{{tag.name}}">{{tag.name}}</a>
+  {{end}}
+
+== Usage Example
+
+  template = Laminate::Template.new(:text => "Your favorite color is: {{color}}")
+
+  template.render(:locals => {:color => 'red'})    => "Your favorite color is: red"
+
+To use in your Rails app, just use:
+
+  render :text => template.render(...)
+
+== Passing data to the template
+
+Literal Ruby values will be automatically converted into Lua. Strings, Booleans, Numbers and nil
+will be converted to Lua equivalents. There is currently no conversion for Time or Date, so its
+suggested to use time.to_f instead.
+
+Along with literals, Ruby Hashes and Arrays will be converted to Lua tables. This conversion is
+recursive, so its easy to pass nested data structures into Lua.
+
+Here is an example:
+
+  > template = Laminate::Template.new(:text => "a deep item is: {{ video.tags[2].name }}")
+  > puts template.render(:locals => 
+     {:video => {:tags => [{:name => 'tag1', :url => '/tag/tag1'}, {:name => 'tag2', :url => '...'}]}})
+  a deep item is: tag2
+  
+Note how Lua arrays are base-1 indexed instead of base-0.
+
+== Binding functions into the template
+
+Ruby functions can be easily bound into the Lua environment. Arguments to the function will be
+automatically converted from Lua, and results will be converted from Ruby according to the same rules
+stated above.
+
+You can provide methods to bind by passing an array as the :helpers option to the #render method.
+Each element of the :helpers array should be either a Ruby Module or an object. All public methods
+of the Module or object will be bound into the Lua environment.
+
+Here is a small example:
+  module HelperFuncs
+    def md5(cleartext)
+      MD5::md5(cleartext).to_s
+    end
+  end
+  
+  template = Laminate::Template.new(:text => "I've got your hash here: {{ md5('secret') }}")
+  template.render(:helpers => [HelperFuncs])
+
+=== Binding functions into a namespace
+
+Laminate supports a simple form for using namespaces in Lua. This can give you a slightly richer
+syntax like:
+    your hash is {{ util.md5('secret') }} and your salt is {{ salt() }}
+    
+Use the following idiom for namespace'd functions:
+
+  class MyHelper < Laminate::AbstractLuaHelper
+    namespace :util
+    
+    def util_md5(cleartext)
+      MD5::md5(cleartext).to_s
+    end
+    
+    def salt
+      rand.to_s
+    end
+  end
+ 
+Use ':namespace' to define one or more namespaces. Functions are matched to those namespaces by using the
+namespace as prefix for the method name. Methods not using the prefix will be bound at the global level.
+       
+== Error handling
+
+By default, errors that occur when processing a template are printed into the template output (PHP style).
+This is good in an interactive development mode.
+
+In production mode, you probably want to catch errors yourself. To do so, simple pass :raise_errors => true
+into the #render method of #Template, or simply call #render!. In this case errors will throw a 
+#TemplateError exception. Note that template compilation is delayed until you call #render, so compile errors
+can be caught in the same place.  
+
+== Security
+
+Laminate templates are executed by the Lua runtime embedded in the Ruby runtime. The Lua runtime is configured
+to remove any insecure functions. In particular, only these standard Lua libraries are loaded:
+
+  base, string, math, table
+  
+Insecure methods from the base package (like 'loadstring') are also removed. The Lua environment therefore
+has no file system access, nor any OS function access.
+
+=== Timeouts
+
+To prevent infinite loops, a SIGALRM timer can be set by Laminate around the running of a template. Use
+:timeout => (secs) in your call to #render to place a maximum execution time for the template.
+
+=== Memory usage
+
+Currently there is no special handling to prevent the template from using too much memory. However, the
+'string:rep' function is removed from Lua, and the use of a short timeout should prevent most trouble.
+  
+
+Requirements
+============
+
+Laminate is built on the fantastic Ruby-Lua binding "rufus-lua" from John Mettaux. Rufus-lua requires
+both the Lua dynamic library and the Ruby FFI gem.
+
+Installation
+============
+
+sudo gem install ffi
+sudo gem install rufus-lua
+sudo gem install laminate
+
+
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2009 Scott Persinger.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

@@ -1,0 +1,10 @@
+_erbout = ''; _erbout.concat "<!-- Tests the Laminate 'include' function for including another template -->\n"
+_erbout.concat(( context.include('_header') ).to_s); _erbout.concat "\n"
+_erbout.concat "\n"
+_erbout.concat "The word for today is:\n"
+_erbout.concat "<p>"; _erbout.concat(( context.word ).to_s); _erbout.concat "</p>\n"
+_erbout.concat "\n"
+_erbout.concat(( context.include('_footer') ).to_s); _erbout.concat "\n"
+_erbout.concat "\n"
+_erbout.concat "\n"
+_erbout

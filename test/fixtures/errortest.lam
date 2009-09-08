@@ -1,0 +1,11 @@
+<h1>Heading</h1>
+
+This is nice text
+
+{{include('_badinclude')}}
+
+and more text
+
+{{loop(badvar)}}
+  detail line
+{{end}}
