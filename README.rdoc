@@ -24,6 +24,7 @@ Iterate over an array of tags:
   {{end}}
 
 == Usage Example
+  require 'laminate'
 
   template = Laminate::Template.new(:text => "Your favorite color is: {{color}}")
 
@@ -36,8 +37,8 @@ To use in your Rails app, just use:
 == Passing data to the template
 
 Literal Ruby values will be automatically converted into Lua. Strings, Booleans, Numbers and nil
-will be converted to Lua equivalents. There is currently no conversion for Time or Date, so its
-suggested to use time.to_f instead.
+will be converted to Lua equivalents. Ruby Time is converted to number of seconds and passed as a 
+Float to Lua.
 
 Along with literals, Ruby Hashes and Arrays will be converted to Lua tables. This conversion is
 recursive, so its easy to pass nested data structures into Lua.
@@ -94,15 +95,23 @@ Use the following idiom for namespace'd functions:
 Use ':namespace' to define one or more namespaces. Functions are matched to those namespaces by using the
 namespace as prefix for the method name. Methods not using the prefix will be bound at the global level.
        
+See the test 'functions_test.rb' for lots of examples of binding Ruby functions into Laminate.
+
 == Error handling
 
 By default, errors that occur when processing a template are printed into the template output (PHP style).
 This is good in an interactive development mode.
 
-In production mode, you probably want to catch errors yourself. To do so, simple pass :raise_errors => true
-into the #render method of #Template, or simply call #render!. In this case errors will throw a 
-#TemplateError exception. Note that template compilation is delayed until you call #render, so compile errors
+In production mode, you probably want to catch errors yourself. To do so, simply pass :raise_errors => true
+into the render method of Laminate::Template, or simply call 'render!'. In this case errors will throw a 
+Laminate::TemplateError exception. Note that template compilation is delayed until you call 'render', so compile errors
 can be caught in the same place.  
+
+Ruby exceptions will be caught and re-raised in Lua using Lua's 'error' function. This lets you get a proper
+line number in the Lua template, but loses the underlying Ruby stack trace. Pass :wrap_exceptions => false to
+'render' if you don't want this behavior.
+
+See the test 'errors_test.rb' for examples of error handling.
 
 == Security
 
@@ -117,7 +126,13 @@ has no file system access, nor any OS function access.
 === Timeouts
 
 To prevent infinite loops, a SIGALRM timer can be set by Laminate around the running of a template. Use
-:timeout => (secs) in your call to #render to place a maximum execution time for the template.
+:timeout => (secs) in your call to #render to place a maximum execution time for the template. Timeouts require
+that your Lua library be built with with 'lalarm' library added to it.
+
+To enable timeouts, you need an extra require:
+
+  require 'laminate'
+  require 'laminate/timeouts'
 
 === Memory usage
 
@@ -128,8 +143,13 @@ Currently there is no special handling to prevent the template from using too mu
 Requirements
 ============
 
-Laminate is built on the fantastic Ruby-Lua binding "rufus-lua" from John Mettaux. Rufus-lua requires
+Laminate is built on the fantastic Ruby-Lua binding "rufus-lua" from John Mettaux 
+(http://github.com/jmettraux/rufus-lua/tree/master). Rufus-lua requires
 both the Lua dynamic library and the Ruby FFI gem.
+
+NOTE: *** Laminate will likely not run on Windows. *** This is due to the dependency on FFI. If you can
+get FFI working (apparently there is a version which works with mingw32 Ruby) then everthing else
+should work OK.
 
 Installation
 ============
