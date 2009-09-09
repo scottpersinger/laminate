@@ -154,9 +154,9 @@ should work OK.
 
 == Installation
 
-sudo gem install ffi
-sudo gem install rufus-lua
-sudo gem install laminate
+  sudo gem install ffi
+  sudo gem install rufus-lua
+  sudo gem install laminate
 
 
 
