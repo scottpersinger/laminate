@@ -123,6 +123,8 @@ to remove any insecure functions. In particular, only these standard Lua librari
 Insecure methods from the base package (like 'loadstring') are also removed. The Lua environment therefore
 has no file system access, nor any OS function access.
 
+Run the test 'security_test.rb' to test LUA security and timeouts.
+
 === Timeouts
 
 To prevent infinite loops, a SIGALRM timer can be set by Laminate around the running of a template. Use
@@ -140,8 +142,7 @@ Currently there is no special handling to prevent the template from using too mu
 'string:rep' function is removed from Lua, and the use of a short timeout should prevent most trouble.
   
 
-Requirements
-============
+== Requirements
 
 Laminate is built on the fantastic Ruby-Lua binding "rufus-lua" from John Mettaux 
 (http://github.com/jmettraux/rufus-lua/tree/master). Rufus-lua requires
@@ -151,8 +152,7 @@ NOTE: *** Laminate will likely not run on Windows. *** This is due to the depend
 get FFI working (apparently there is a version which works with mingw32 Ruby) then everthing else
 should work OK.
 
-Installation
-============
+== Installation
 
 sudo gem install ffi
 sudo gem install rufus-lua
